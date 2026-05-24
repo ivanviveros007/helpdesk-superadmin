@@ -36,3 +36,12 @@ export function useUpdateOrg() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["organizations"] }),
   });
 }
+
+export function useUpdateAiConfig() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; company_type?: string; ai_custom_instructions?: string }) =>
+      (await apiClient.patch(`/super-admin/organizations/${id}/ai-config`, data)).data,
+    onSuccess: (_data, vars) => qc.invalidateQueries({ queryKey: ["organizations", vars.id] }),
+  });
+}

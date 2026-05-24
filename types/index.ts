@@ -21,6 +21,8 @@ export interface Organization {
   slug: string;
   plan: string;
   estado_activo: boolean;
+  company_type: string | null;
+  ai_custom_instructions: string | null;
   created_at: string;
   stats: OrgStats;
 }

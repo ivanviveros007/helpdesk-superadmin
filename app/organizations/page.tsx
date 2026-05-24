@@ -9,14 +9,14 @@ export default function OrganizationsPage() {
   const { data: orgs = [], isLoading } = useOrganizations();
   const { mutate: createOrg, isPending } = useCreateOrg();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ nombre: "", slug: "", plan: "trial", admin_nombre: "", admin_email: "", admin_password: "" });
+  const [form, setForm] = useState({ nombre: "", slug: "", plan: "trial", company_type: "", admin_nombre: "", admin_email: "", admin_password: "" });
   const [error, setError] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     createOrg(form, {
-      onSuccess: () => { setShowForm(false); setForm({ nombre: "", slug: "", plan: "trial", admin_nombre: "", admin_email: "", admin_password: "" }); },
+      onSuccess: () => { setShowForm(false); setForm({ nombre: "", slug: "", plan: "trial", company_type: "", admin_nombre: "", admin_email: "", admin_password: "" }); },
       onError: (err: any) => setError(err?.response?.data?.message ?? "Error al crear la organización"),
     });
   };
@@ -47,6 +47,15 @@ export default function OrganizationsPage() {
               <option value="starter">Starter</option>
               <option value="pro">Pro</option>
               <option value="enterprise">Enterprise</option>
+            </select>
+            <select value={form.company_type} onChange={(e) => setForm({ ...form, company_type: e.target.value })} className={inputCls}>
+              <option value="">Tipo de empresa (opcional)</option>
+              <option value="tech_saas">Tech SaaS</option>
+              <option value="ecommerce">E-commerce</option>
+              <option value="healthcare">Healthcare</option>
+              <option value="retail">Retail</option>
+              <option value="it_services">IT Services / MSP</option>
+              <option value="other">Otro</option>
             </select>
           </div>
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Admin inicial</p>
