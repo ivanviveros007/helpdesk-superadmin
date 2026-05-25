@@ -64,7 +64,7 @@ export default function OrgDetailPage() {
     updateAiConfig(
       { id, ...aiForm },
       {
-        onSuccess: () => { setAiSuccess(true); },
+        onSuccess: () => { setAiSuccess(true); setTimeout(() => { setAiForm(null); setAiSuccess(false); }, 1200); },
       }
     );
   };
