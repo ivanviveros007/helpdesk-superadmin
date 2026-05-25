@@ -47,3 +47,13 @@ export function useDeleteMember(orgId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["org-members", orgId] }),
   });
 }
+
+export function useUpdateTechnician(orgId: string) {
+  const qc = useQueryClient();
+  return useMutation<void, Error, { memberId: string; nombre?: string; email?: string; password?: string }>({
+    mutationFn: async ({ memberId, ...data }) => {
+      await apiClient.patch(`/super-admin/organizations/${orgId}/members/technicians/${memberId}`, data);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["org-members", orgId] }),
+  });
+}
