@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, UserPlus, Bot } from "lucide-react";
+import { ArrowLeft, UserPlus, Bot, Users, ShieldCheck, Wrench, User, PowerOff, Power, Trash2 } from "lucide-react";
 import { useOrganization, useUpdateOrg, useUpdateAiConfig } from "@/hooks/useOrganizations";
+import { useOrgMembers, useToggleMemberStatus, useDeleteMember } from "@/hooks/useOrgMembers";
 import apiClient from "@/lib/api-client";
 
 const COMPANY_TYPE_OPTIONS = [
@@ -22,6 +23,10 @@ export default function OrgDetailPage() {
   const { data: org, isLoading } = useOrganization(id);
   const { mutate: updateOrg, isPending } = useUpdateOrg();
   const { mutate: updateAiConfig, isPending: isSavingAi } = useUpdateAiConfig();
+
+  const { data: members, isLoading: isLoadingMembers } = useOrgMembers(id);
+  const { mutate: toggleMember } = useToggleMemberStatus(id);
+  const { mutate: deleteMember } = useDeleteMember(id);
 
   const [showAdminForm, setShowAdminForm] = useState(false);
   const [adminForm, setAdminForm] = useState({ nombre: "", email: "", password: "" });
@@ -130,6 +135,81 @@ export default function OrgDetailPage() {
             <p className="text-2xl font-bold text-white">{value}</p>
           </div>
         ))}
+      </div>
+
+      {/* Members */}
+      <div className="rounded-xl border border-slate-700 bg-slate-900 p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="h-5 w-5 text-violet-400" />
+          <h2 className="font-semibold text-white">Miembros</h2>
+          {isLoadingMembers && <span className="text-xs text-slate-500">Cargando...</span>}
+        </div>
+
+        {members && (members.technicians.length > 0 || members.users.length > 0) ? (
+          <div className="flex flex-col gap-4">
+            {members.technicians.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">Técnicos & Admins</p>
+                <div className="flex flex-col gap-1">
+                  {members.technicians.map((m) => (
+                    <div key={m.id} className="flex items-center gap-3 rounded-lg bg-slate-800 px-3 py-2">
+                      <ShieldCheck className={`h-4 w-4 shrink-0 ${m.role === "admin" ? "text-violet-400" : "text-slate-400"}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{m.nombre}</p>
+                        <p className="text-xs text-slate-400 truncate">{m.email}</p>
+                      </div>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${m.role === "admin" ? "bg-violet-900/40 text-violet-300" : "bg-slate-700 text-slate-300"}`}>
+                        {m.role}
+                      </span>
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${m.estado_activo ? "bg-green-500" : "bg-slate-600"}`} />
+                      <button
+                        onClick={() => toggleMember({ type: "technician", memberId: m.id })}
+                        title={m.estado_activo ? "Suspender" : "Activar"}
+                        className={`shrink-0 transition-colors ${m.estado_activo ? "text-slate-500 hover:text-yellow-400" : "text-slate-500 hover:text-green-400"}`}
+                      >
+                        {m.estado_activo ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {members.users.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">Usuarios</p>
+                <div className="flex flex-col gap-1">
+                  {members.users.map((m) => (
+                    <div key={m.id} className="flex items-center gap-3 rounded-lg bg-slate-800 px-3 py-2">
+                      <User className="h-4 w-4 shrink-0 text-slate-400" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{m.nombre}</p>
+                        <p className="text-xs text-slate-400 truncate">{m.email}</p>
+                      </div>
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${m.estado_activo ? "bg-green-500" : "bg-slate-600"}`} />
+                      <button
+                        onClick={() => toggleMember({ type: "user", memberId: m.id })}
+                        title={m.estado_activo ? "Suspender" : "Activar"}
+                        className={`shrink-0 transition-colors ${m.estado_activo ? "text-slate-500 hover:text-yellow-400" : "text-slate-500 hover:text-green-400"}`}
+                      >
+                        {m.estado_activo ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                      </button>
+                      <button
+                        onClick={() => { if (window.confirm(`¿Eliminar a ${m.nombre}?`)) deleteMember({ memberId: m.id }); }}
+                        title="Eliminar"
+                        className="shrink-0 text-slate-500 transition-colors hover:text-red-400"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          !isLoadingMembers && <p className="text-sm italic text-slate-500">Sin miembros aún.</p>
+        )}
       </div>
 
       {/* AI Configuration */}
